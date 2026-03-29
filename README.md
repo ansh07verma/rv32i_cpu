@@ -46,5 +46,3 @@ add_wave /tb_phase5_top/uut/pc_out
 add_wave -radix hex /tb_phase5_top/uut/instr
 add_wave -radix dec /tb_phase5_top/uut/alu_inst/result
 ```
-
-*Project taped out and rigorously verified via Phase 6 execution methodologies.*
