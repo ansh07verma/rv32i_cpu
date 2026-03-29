@@ -1,0 +1,20 @@
+// ============================================================
+// Program: prog_edgecases.mem
+// Project: RV32I Single-Cycle Processor — Phase 5
+//
+// Description:
+// Tests exact architectural edge bounds:
+//   1. Zero register overwrite prevention
+//   2. Negative immediate generation (sign-extension)
+//   3. Signed comparison (SLT) with negative arrays
+//   4. Illegal opcodes mapping to Traps
+// ============================================================
+
+00A00013 // 0x00: ADDI x0, x0, 10  -> Will trigger $error in regfile
+00A00093 // 0x04: ADDI x1, x0, 10  -> x1 = 10
+FFB00113 // 0x08: ADDI x2, x0, -5  -> x2 = -5 (sign ext verify)
+0020A1B3 // 0x0C: SLT  x3, x1, x2  -> x3 = (10 < -5) = 0
+00112233 // 0x10: SLT  x4, x2, x1  -> x4 = (-5 < 10) = 1
+FFFFFFFF // 0x14: ILLEGAL_OPCODE   -> Control unit sets trap=1
+FE108EE3 // 0x18: BEQ  x1, x1, -4  -> Infinite loop (never reached)
+00000013 // 0x1C: NOP

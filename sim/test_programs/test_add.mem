@@ -1,0 +1,24 @@
+// RV32I Test Program
+// Format: $readmemh — pure hex, one 32-bit word per line
+// Vivado xsim compatible (no leading comment-only lines before data)
+//
+// ADDI x6, x0, 10      -> x6 = 10
+// ADDI x7, x0,  5      -> x7 = 5
+// ADD  x5, x6, x7      -> x5 = 15
+// SW   x5, 0(x0)       -> MEM[0] = 15
+// LW   x10, 0(x0)      -> x10 = MEM[0] = 15
+// BEQ  x5, x10, +8     -> branch 2 instructions forward (skip ADDI x1)
+// ADDI x1, x0, 99      -> SKIPPED if BEQ taken (x5==x10)
+// ADDI x2, x0, 42      -> x2 = 42
+// NOP
+// NOP
+00A00313
+00500393
+00730333
+00502023
+00002503
+00A28463
+06300093
+02A00113
+00000013
+00000013

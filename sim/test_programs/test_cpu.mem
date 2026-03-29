@@ -1,0 +1,43 @@
+// ============================================================
+// Test Program : test_cpu.mem
+// Project      : RV32I Phase 3 — Full CPU Integration
+// Format       : $readmemh  (one 32-bit word per line, hex)
+//
+// Hand-assembled RV32I encodings — verified bit-by-bit
+//
+// Abbreviations: rd=dest, rs1=src1, rs2=src2, imm=immediate
+//
+// PC    Hex         Assembly                    Encoding Breakdown
+// 0x00  00A00313    ADDI x6,  x0,  10       rd=x6  rs1=x0  imm=10
+// 0x04  00500393    ADDI x7,  x0,  5        rd=x7  rs1=x0  imm=5
+// 0x08  00730333    ADD  x6,  x6,  x7       rd=x6  rs1=x6  rs2=x7
+// 0x0C  00602023    SW   x6,  0(x0)         rs1=x0 rs2=x6  imm=0  → MEM[0]=15
+// 0x10  00002303    LW   x6,  0(x0)         rd=x6  rs1=x0  imm=0  → x6=MEM[0]=15
+// 0x14  40630333    SUB  x6,  x6,  x6       rd=x6  rs1=x6  rs2=x6 → x6=0
+// 0x18  00530463    BEQ  x6,  x5,  +8       rs1=x6 rs2=x5  imm=+8 → TAKEN(x6=x5=0)
+// 0x1C  06300313    ADDI x6,  x0,  99       SKIPPED (branch taken)
+// 0x20  02A00113    ADDI x2,  x0,  42       rd=x2  rs1=x0  imm=42
+// 0x24  00000013    NOP  (ADDI x0, x0, 0)
+// 0x28  00000013    NOP
+//
+// SW encoding check (S-type):  SW rs2, imm(rs1)
+//   SW x6, 0(x0): imm=0, rs2=x6(00110), rs1=x0(00000), funct3=010, op=0100011
+//   [31:25]=0000000 [24:20]=00110 [19:15]=00000 [14:12]=010 [11:7]=00000 [6:0]=0100011
+//   = 0000000_00110_00000_010_00000_0100011 = 0x00602023  ✓
+//
+// BEQ encoding check (B-type): BEQ rs1, rs2, offset
+//   BEQ x6, x5, +8: offset=8, rs1=x6(00110), rs2=x5(00101), funct3=000, op=1100011
+//   imm[12]=0, imm[10:5]=000000, rs2=00101, rs1=00110, funct3=000, imm[4:1]=0100, imm[11]=0
+//   = 0_000000_00101_00110_000_0100_0_1100011 = 0x00530463  ✓
+// ============================================================
+00A00313
+00500393
+00730333
+00602023
+00002303
+40630333
+00530463
+06300313
+02A00113
+00000013
+00000013

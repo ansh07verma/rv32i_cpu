@@ -1,0 +1,69 @@
+// ============================================================
+// Program 2: prog_memops.mem — Memory Load / Store Sequence
+// Project  : RV32I Single-Cycle Processor — Phase 4
+// Format   : $readmemh  (one 32-bit word per line, MSB first)
+//
+// This program exercises the full LW/SW data path:
+//   1. Write three distinct values to three DMEM words
+//   2. Read them back, accumulate into a sum register
+//   3. Store the sum at a fourth address
+//   4. Verify the store with a final LW
+//
+// Register usage:
+//   x1  = 0xA5      (base data value)
+//   x2  = 0x3C      (second value)
+//   x3  = 0x11      (third value)
+//   x4  = 0 (base addr for all mem ops, using x0)
+//   x10 = reload of MEM[0]  = 0xA5
+//   x11 = reload of MEM[4]  = 0x3C
+//   x12 = reload of MEM[8]  = 0x11
+//   x13 = x10+x11+x12 = 0xEA (234)
+//   x14 = reload of MEM[12] = 0xEA (verify SW worked)
+//
+// PC    Hex          Assembly                        Notes
+// 0x00  0A500093     ADDI x1, x0, 165  (0xA5)       x1 = 0xA5
+// 0x04  03C00113     ADDI x2, x0, 60   (0x3C)       x2 = 0x3C
+// 0x08  01100193     ADDI x3, x0, 17   (0x11)       x3 = 0x11
+// 0x0C  00102023     SW   x1, 0(x0)                 MEM[0x00] = 0xA5
+// 0x10  00202223     SW   x2, 4(x0)                 MEM[0x04] = 0x3C
+// 0x14  00302423     SW   x3, 8(x0)                 MEM[0x08] = 0x11
+// 0x18  00002503     LW   x10, 0(x0)                x10= MEM[0x00] = 0xA5
+// 0x1C  00402583     LW   x11, 4(x0)                x11= MEM[0x04] = 0x3C
+// 0x20  00802603     LW   x12, 8(x0)                x12= MEM[0x08] = 0x11
+// 0x24  00B50663     ADD  x13, x10, x11             x13= 0xA5+0x3C = 0xE1
+// 0x28  00C686B3     ADD  x13, x13, x12             x13= 0xE1+0x11 = 0xF2  (242)
+// 0x2C  00D02623     SW   x13, 12(x0)               MEM[0x0C] = 0xF2
+// 0x30  00C02703     LW   x14, 12(x0)               x14= MEM[0x0C] = 0xF2 (verify)
+// 0x34  00000013     NOP
+// 0x38  00000013     NOP
+//
+// Encoding verification (selected):
+//   ADDI x1,x0,165:  imm=165(0x0A5), rs1=0, funct3=000, rd=1, op=0010011
+//     = 0000_1010_0101_00000_000_00001_0010011 = 0x0A500093 ✓
+//   SW x1, 0(x0):    S-type imm=0, rs2=x1(00001), rs1=x0(00000), funct3=010, op=0100011
+//     imm[11:5]=0000000, rs2=00001, rs1=00000, f3=010, imm[4:0]=00000
+//     = 0000000_00001_00000_010_00000_0100011 = 0x00102023 ✓
+//   SW x2, 4(x0):    S-type imm=4(0b00100), rs2=x2, rs1=x0
+//     imm[11:5]=0000000, rs2=00010, rs1=00000, f3=010, imm[4:0]=00100
+//     = 0000000_00010_00000_010_00100_0100011 = 0x00202223 ✓
+//   LW x10, 0(x0):   I-type imm=0, rs1=x0, funct3=010, rd=x10(01010), op=0000011
+//     = 0000_0000_0000_00000_010_01010_0000011 = 0x00002503 ✓
+//   ADD x13,x10,x11: funct7=0, rs2=x11(01011), rs1=x10(01010), f3=000, rd=x13(01101)
+//     rd=13=01101, rs1=10=01010, rs2=11=01011
+//     = 0000000_01011_01010_000_01101_0110011 = 0x00B506B3 ✓
+// ============================================================
+0A500093
+03C00113
+01100193
+00102023
+00202223
+00302423
+00002503
+00402583
+00802603
+00B506B3
+00C686B3
+00D02623
+00C02703
+00000013
+00000013

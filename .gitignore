@@ -1,0 +1,44 @@
+# ==============================================================================
+# RV32I RISC-V CPU - Vivado/Git Ignore Configuration
+# ==============================================================================
+
+# IDE and Editor Metadata
+.vscode/
+.vs/
+.kiro/
+*.swp
+*~
+
+# Vivado Projects & Workspaces
+# DO NOT push the entire 500MB+ Vivado build environment.
+vivado_project/
+*.xpr
+
+# Vivado Log and Journal Files
+*.jou
+*.log
+*.str
+
+# Vivado Synthesis & Implementation Artifacts
+.Xil/
+xsim.dir/
+*.wdb
+*.wcfg
+*.pb
+*.os
+*.hw
+*.cache/
+*.runs/
+*.sim/
+
+# Vivado Outputs (Bitstreams, Checkpoints, IP)
+*.bit
+*.bin
+*.mmi
+*.dcp
+*.bd
+*.bxml
+
+# OS Generated Files
+.DS_Store
+Thumbs.db

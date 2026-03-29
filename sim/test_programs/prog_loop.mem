@@ -1,0 +1,80 @@
+// ============================================================
+// Program 3: prog_loop.mem — Countdown Loop Using BEQ
+// Project  : RV32I Single-Cycle Processor — Phase 4
+// Format   : $readmemh  (one 32-bit word per line, MSB first)
+//
+// Algorithm:
+//   x1 = 4        (loop counter N)
+//   x2 = 0        (accumulator)
+//   x3 = 1        (step — ADDI immediate)
+//   LOOP:
+//     x2 = x2 + x1    (accumulate: 4+3+2+1 = 10)
+//     x1 = x1 - x3    (decrement counter)
+//     BEQ x1, x0, EXIT (branch when counter == 0)
+//     jump back to LOOP (encoded as BEQ x0,x0, which is always-taken)
+//   EXIT:
+//     x4 = x2          (save result: expected 10 = 0xA)
+//     NOP, NOP
+//
+// PC layout (word addresses):
+//   PC 0x00  ADDI x1, x0, 4       → x1 = 4
+//   PC 0x04  ADDI x2, x0, 0       → x2 = 0 (accumulator)
+//   PC 0x08  ADDI x3, x0, 1       → x3 = 1 (step)
+//   --------------- LOOP START @ PC 0x0C ---------------
+//   PC 0x0C  ADD  x2, x2, x1      → x2 += x1
+//   PC 0x10  SUB  x1, x1, x3      → x1 -= 1
+//   PC 0x14  BEQ  x1, x0, +12     → if x1==0 jump to PC 0x20 (EXIT)
+//   PC 0x18  BEQ  x0, x0, -12     → always jump back to PC 0x0C (LOOP)
+//   --------------- EXIT @ PC 0x20 ---------------  (NOTE: 0x1C skipped)
+//   PC 0x1C  NOP                   (branch delay slot / never reached)
+//   PC 0x20  ADD  x4, x2, x0      → x4 = x2 (= 10)
+//   PC 0x24  NOP
+//   PC 0x28  NOP
+//
+// BEQ offsets are PC-relative byte offsets (even, signed):
+//   BEQ x1,x0,+12 @ PC=0x14: target=0x20, offset=0x20-0x14=+12 → imm=12
+//   BEQ x0,x0,-12 @ PC=0x18: target=0x0C, offset=0x0C-0x18=-12 → imm=-12
+//
+// Encoding:
+//   ADDI x1,x0,4:  imm=4, rs1=0, f3=000, rd=1, op=0010011
+//     = 0000_0000_0100_00000_000_00001_0010011 = 0x00400093 ✓
+//   ADDI x2,x0,0:  imm=0, rs1=0, f3=000, rd=2, op=0010011
+//     = 0000_0000_0000_00000_000_00010_0010011 = 0x00000113 ✓
+//   ADDI x3,x0,1:  imm=1, rs1=0, f3=000, rd=3, op=0010011
+//     = 0000_0000_0001_00000_000_00011_0010011 = 0x00100193 ✓
+//   ADD x2,x2,x1:  f7=0, rs2=x1(00001), rs1=x2(00010), f3=000, rd=x2(00010), op=0110011
+//     = 0000000_00001_00010_000_00010_0110011 = 0x00110133 ✓
+//   SUB x1,x1,x3:  f7=0100000, rs2=x3(00011), rs1=x1(00001), f3=000, rd=x1(00001)
+//     = 0100000_00011_00001_000_00001_0110011 = 0x403080B3 ✓
+//
+//   BEQ x1,x0,+12 @ PC=0x14:
+//     B-type: offset=12=0b0000_1100
+//     imm[12]=0, imm[11]=0, imm[10:5]=000000, imm[4:1]=0110, imm[0]=0(implicit)
+//     rs1=x1(00001), rs2=x0(00000), funct3=000, op=1100011
+//     [31]imm[12]=0, [30:25]imm[10:5]=000000, [24:20]rs2=00000,
+//     [19:15]rs1=00001, [14:12]f3=000, [11:8]imm[4:1]=0110, [7]imm[11]=0, [6:0]=1100011
+//     = 0_000000_00000_00001_000_0110_0_1100011 = 0x00008663 ✓
+//
+//   BEQ x0,x0,-12 @ PC=0x18:
+//     offset=-12 = 0xFFFFFFF4, B-imm field = -12
+//     -12 in 13-bit signed = 1_1111111_10100 (two's complement)
+//     imm[12]=1, imm[11]=1, imm[10:5]=111111, imm[4:1]=0100
+//     rs1=x0(00000), rs2=x0(00000), f3=000, op=1100011
+//     [31]imm[12]=1, [30:25]imm[10:5]=111111, [24:20]rs2=00000,
+//     [19:15]rs1=00000, [14:12]f3=000, [11:8]imm[4:1]=0100, [7]imm[11]=1, [6:0]=1100011
+//     = 1_111111_00000_00000_000_0100_1_1100011 = 0xFE000AE3 ✓
+//
+//   ADD x4,x2,x0:  f7=0, rs2=x0(00000), rs1=x2(00010), f3=000, rd=x4(00100), op=0110011
+//     = 0000000_00000_00010_000_00100_0110011 = 0x00010233 ✓
+// ============================================================
+00400093
+00000113
+00100193
+00110133
+403080B3
+00008663
+FE000AE3
+00000013
+00010233
+00000013
+00000013
