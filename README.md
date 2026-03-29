@@ -122,7 +122,7 @@ reset ──▶│                                                            �
 
 ## Running Simulations (Vivado)
 
-### Quick Start — Master Testbench (Phase 5)
+### Quick Start — Master Testbench
 
 **Step 1**: Update the `.mem` file paths in `tb_phase5_top.sv` to match your local project directory.
 
@@ -161,7 +161,7 @@ launch_simulation
  FINAL RV32I RTL VERIFICATION RESULTS
  OVERALL PASS : 23
  OVERALL FAIL : 0
- PHASE 5 VERIFICATION + OPTIMIZATION COMPLETE ✓
+ VERIFICATION + OPTIMIZATION COMPLETE ✓
 =================================================
 ```
 
